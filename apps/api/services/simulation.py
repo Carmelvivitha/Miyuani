@@ -33,7 +33,7 @@ class SimulationEngine:
 
     def _init_simulation(self):
         # Initial Satellites
-        satellites = ["ISRO Resourcesat-2", "Sentinel-2", "Landsat-9"]
+        satellites = ["NOAA-20", "Sentinel-2", "Landsat-9"]
         base_lat = 22.0
         base_lng = 79.0
         

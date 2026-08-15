@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 from database import init_db, close_db
-from routers import dashboard, maps, auth_router
+from routers import dashboard, maps, auth_router, earth_time_machine_router
 
 load_dotenv()
 
@@ -50,6 +50,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(dashboard.router)
 app.include_router(maps.router)
+app.include_router(earth_time_machine_router.router)
 
 @app.get("/")
 def read_root():

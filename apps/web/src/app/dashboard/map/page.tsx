@@ -1,16 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 
-// Fix Leaflet default icon issue
-delete (L.Icon.Default.prototype as any)._getIconUrl
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: '/marker-icon-2x.png',
-    iconUrl: '/marker-icon.png',
-    shadowUrl: '/marker-shadow.png',
+// Dynamically import the map component with SSR disabled
+const PestMap = dynamic(() => import('@/components/PestMap'), {
+    ssr: false,
+    loading: () => (
+        <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading map engine...</p>
+            </div>
+        </div>
+    )
 })
 
 interface PestAlert {
@@ -29,7 +32,7 @@ export default function PestMapsPage() {
     const [filter, setFilter] = useState<'all' | 'High' | 'Medium' | 'Low'>('all')
 
     // Fetch pest alerts from API
-    useState(() => {
+    useEffect(() => {
         fetch('http://localhost:8000/api/dashboard/data')
             .then(res => res.json())
             .then(data => {
@@ -37,20 +40,11 @@ export default function PestMapsPage() {
                 setLoading(false)
             })
             .catch(() => setLoading(false))
-    })
+    }, [])
 
     const filteredAlerts = filter === 'all'
         ? alerts
         : alerts.filter(a => a.severity === filter)
-
-    const getSeverityColor = (severity: string) => {
-        switch (severity) {
-            case 'High': return '#dc2626'
-            case 'Medium': return '#f59e0b'
-            case 'Low': return '#10b981'
-            default: return '#6b7280'
-        }
-    }
 
     return (
         <div className="p-8">
@@ -68,8 +62,8 @@ export default function PestMapsPage() {
                             key={level}
                             onClick={() => setFilter(level)}
                             className={`px-4 py-2 rounded-lg transition ${filter === level
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             {level}
@@ -91,38 +85,7 @@ export default function PestMapsPage() {
                         </div>
                     </div>
                 ) : (
-                    <MapContainer
-                        center={[20.5937, 78.9629]}
-                        zoom={8}
-                        style={{ height: '100%', width: '100%' }}
-                    >
-                        <TileLayer
-                            attribution='&copy; OpenStreetMap contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                        {filteredAlerts.map(alert => (
-                            <Circle
-                                key={alert.id}
-                                center={[alert.location.lat, alert.location.lng]}
-                                radius={alert.affected_area_ha * 100}
-                                pathOptions={{
-                                    color: getSeverityColor(alert.severity),
-                                    fillColor: getSeverityColor(alert.severity),
-                                    fillOpacity: 0.3
-                                }}
-                            >
-                                <Popup>
-                                    <div className="p-2">
-                                        <h3 className="font-bold text-lg mb-2">{alert.pest_type}</h3>
-                                        <p className="text-sm"><strong>Severity:</strong> {alert.severity}</p>
-                                        <p className="text-sm"><strong>Affected Area:</strong> {alert.affected_area_ha} ha</p>
-                                        <p className="text-sm"><strong>Confidence:</strong> {(alert.confidence * 100).toFixed(1)}%</p>
-                                        <p className="text-sm text-gray-600">{new Date(alert.timestamp).toLocaleString()}</p>
-                                    </div>
-                                </Popup>
-                            </Circle>
-                        ))}
-                    </MapContainer>
+                    <PestMap alerts={filteredAlerts} />
                 )}
             </div>
 

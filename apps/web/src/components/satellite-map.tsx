@@ -88,9 +88,9 @@ export default function SatelliteMap({ passes = [], alerts = [] }: SatelliteMapP
                 zoom={5}
                 style={{ height: "100%", width: "100%" }}
             >
-                {/* ISRO Bhuvan / Esri Satellite Layer */}
+                {/* Esri Satellite Layer */}
                 <TileLayer
-                    attribution='&copy; <a href="https://www.esri.com/">Esri</a>, ISRO Bhuvan'
+                    attribution='&copy; <a href="https://www.esri.com/">Esri</a>, Satellite Imagery'
                     url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                 />
 
